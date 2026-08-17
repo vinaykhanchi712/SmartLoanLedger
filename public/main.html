@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart EMI Ledger</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --paper:#F7F4EC;
+  --paper-line:#DCD3B8;
+  --card:#FFFDF8;
+  --ink:#1B2A4A;
+  --ink-soft:#5A6A8A;
+  --gold:#B8862F;
+  --gold-soft:#EFDFB8;
+  --green:#2F6B4F;
+  --green-soft:#DCEAE1;
+  --rust:#A63D2F;
+  --rust-soft:#F2DEDA;
+  --radius:2px;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--paper);
+  background-image:
+    repeating-linear-gradient(transparent, transparent 38px, var(--paper-line) 39px);
+  color:var(--ink);
+  font-family:'IBM Plex Sans', sans-serif;
+  padding:0 0 60px 0;
+}
+.mono{font-family:'IBM Plex Mono', monospace;}
+.wrap{max-width:920px;margin:0 auto;padding:28px 20px;}
+
+/* Header */
+.masthead{
+  border-bottom:3px double var(--ink);
+  padding-bottom:16px;
+  margin-bottom:22px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.masthead h1{
+  font-family:'Fraunces', serif;
+  font-weight:700;
+  font-size:2.1rem;
+  margin:0;
+  letter-spacing:-0.5px;
+}
+.masthead .tag{
+  font-size:0.72rem;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  font-weight:600;
+}
+.disclaimer{
+  font-size:0.78rem;
+  color:var(--ink-soft);
+  background:var(--gold-soft);
+  border:1px solid var(--gold);
+  padding:8px 12px;
+  border-radius:var(--radius);
+  margin-bottom:24px;
+}
+
+/* Summary strip */
+.summary{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--ink);
+  border:1px solid var(--ink);
+  margin-bottom:28px;
+}
+.summary .cell{
+  background:var(--card);
+  padding:14px 12px;
+}
+.summary .cell .label{
+  font-size:0.68rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--ink-soft);
+  margin-bottom:6px;
+}
+.summary .cell .value{
+  font-family:'Fraunces', serif;
+  font-weight:600;
+  font-size:1.35rem;
+}
+@media(max-width:640px){.summary{grid-template-columns:repeat(2,1fr);}}
+
+section{margin-bottom:34px;}
+.section-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  border-bottom:1px solid var(--ink);
+  padding-bottom:6px;
+  margin-bottom:14px;
+}
+.section-head h2{
+  font-family:'Fraunces', serif;
+  font-size:1.15rem;
+  font-weight:600;
+  margin:0;
+}
+.section-head .idx{
+  font-size:0.72rem;
+  color:var(--ink-soft);
+  letter-spacing:1px;
+}
+.btn{
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:0.78rem;
+  font-weight:600;
+  border:1px solid var(--ink);
+  background:var(--ink);
+  color:var(--paper);
+  padding:7px 14px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  letter-spacing:0.3px;
+}
+.btn:hover{opacity:0.85;}
+.btn.secondary{background:transparent;color:var(--ink);}
+.btn.danger{background:var(--rust);border-color:var(--rust);}
+.btn.small{padding:4px 9px;font-size:0.7rem;}
+
+/* Loan ledger rows */
+.loan-row{
+  background:var(--card);
+  border:1px solid var(--paper-line);
+  border-left:4px solid var(--ink);
+  padding:12px 14px;
+  margin-bottom:8px;
+  display:flex;
+  gap:14px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.loan-row.creditcard{border-left-color:var(--rust);}
+.loan-row .num{
+  font-family:'Fraunces',serif;
+  font-weight:600;
+  font-size:1rem;
+  color:var(--ink-soft);
+  width:22px;
+}
+.loan-row .main{flex:1;min-width:180px;}
+.loan-row .main .name{font-weight:600;font-size:0.95rem;}
+.loan-row .main .meta{font-size:0.75rem;color:var(--ink-soft);margin-top:2px;}
+.loan-row .figs{display:flex;gap:18px;flex-wrap:wrap;}
+.loan-row .figs .f{text-align:right;}
+.loan-row .figs .f .l{font-size:0.65rem;text-transform:uppercase;color:var(--ink-soft);letter-spacing:0.5px;}
+.loan-row .figs .f .v{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.9rem;}
+.badge{
+  font-size:0.65rem;
+  padding:2px 7px;
+  border-radius:10px;
+  font-weight:600;
+  letter-spacing:0.3px;
+  white-space:nowrap;
+}
+.badge.zero{background:var(--green-soft);color:var(--green);}
+.badge.charge{background:var(--rust-soft);color:var(--rust);}
+.row-actions{display:flex;gap:6px;}
+
+/* Form */
+.form-panel{
+  background:var(--card);
+  border:1px solid var(--ink);
+  padding:18px;
+  margin-bottom:16px;
+}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr;}}
+.field label{display:block;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-soft);margin-bottom:4px;}
+.field input,.field select{
+  width:100%;
+  padding:8px 9px;
+  border:1px solid var(--paper-line);
+  background:var(--paper);
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:0.88rem;
+  border-radius:var(--radius);
+  color:var(--ink);
+}
+.field input:focus,.field select:focus{outline:2px solid var(--gold);border-color:var(--gold);}
+.field.check{display:flex;align-items:center;gap:8px;}
+.field.check input{width:auto;}
+.form-actions{display:flex;gap:8px;margin-top:14px;}
+
+/* Priority stamps */
+.priority-list{display:flex;flex-direction:column;gap:10px;}
+.priority-item{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:var(--card);
+  border:1px solid var(--paper-line);
+  padding:10px 14px;
+}
+.stamp{
+  width:52px;height:52px;border-radius:50%;
+  border:2px dashed var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;
+  transform:rotate(-6deg);
+  flex-shrink:0;
+  color:var(--ink);
+}
+.stamp .r{font-family:'Fraunces',serif;font-weight:700;font-size:1.2rem;line-height:1;}
+.stamp .t{font-size:0.5rem;letter-spacing:0.5px;text-transform:uppercase;}
+.priority-item .pi-main{flex:1;}
+.priority-item .pi-main .nm{font-weight:600;}
+.priority-item .pi-main .note{font-size:0.76rem;color:var(--ink-soft);margin-top:2px;}
+.priority-item .pi-rate{text-align:right;font-family:'IBM Plex Mono',monospace;}
+.priority-item .pi-rate .eff{font-weight:600;font-size:1.05rem;color:var(--rust);}
+.priority-item .pi-rate .nom{font-size:0.7rem;color:var(--ink-soft);}
+
+/* Waterfall */
+.waterfall-input{display:flex;gap:10px;align-items:flex-end;margin-bottom:14px;flex-wrap:wrap;}
+.waterfall-input .field{flex:1;min-width:180px;}
+.waterfall-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.waterfall-table th{
+  text-align:left;font-size:0.68rem;text-transform:uppercase;color:var(--ink-soft);
+  border-bottom:1px solid var(--ink);padding:6px 8px;letter-spacing:0.4px;
+}
+.waterfall-table td{padding:8px;border-bottom:1px solid var(--paper-line);font-family:'IBM Plex Mono',monospace;}
+.waterfall-table td.name{font-family:'IBM Plex Sans',sans-serif;font-weight:500;}
+.waterfall-summary{
+  margin-top:12px;padding:12px 14px;background:var(--green-soft);border:1px solid var(--green);
+  font-size:0.9rem;
+}
+.waterfall-summary b{color:var(--green);}
+.goal-explain{
+  font-size:0.8rem;color:var(--ink-soft);line-height:1.5;
+  background:var(--paper);border-left:3px solid var(--gold);padding:9px 12px;margin-bottom:14px;
+}
+.history-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.history-table th{text-align:left;font-size:0.68rem;text-transform:uppercase;color:var(--ink-soft);border-bottom:1px solid var(--ink);padding:6px 8px;letter-spacing:0.4px;}
+.history-table td{padding:8px;border-bottom:1px solid var(--paper-line);font-family:'IBM Plex Mono',monospace;}
+.history-table td.delta-pos{color:var(--green);}
+.history-table td.delta-neg{color:var(--rust);}
+.closed-badge{background:var(--green-soft);color:var(--green);font-size:0.65rem;padding:2px 7px;border-radius:10px;font-weight:600;margin-left:6px;}
+
+/* Simulator */
+.sim-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;margin-bottom:18px;}
+@media(max-width:760px){.sim-grid{grid-template-columns:1fr 1fr;}}
+.sim-result{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:640px){.sim-result{grid-template-columns:1fr;}}
+.sim-card{background:var(--card);border:1px solid var(--paper-line);padding:14px 16px;}
+.sim-card h3{margin:0 0 10px 0;font-family:'Fraunces',serif;font-size:0.95rem;}
+.sim-card .kv{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--paper-line);font-size:0.85rem;}
+.sim-card .kv .k{color:var(--ink-soft);}
+.sim-card .kv .v{font-family:'IBM Plex Mono',monospace;font-weight:600;}
+.sim-card.after{border-left:4px solid var(--green);}
+.bar-compare{margin-top:14px;}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.bar-row .lbl{width:70px;font-size:0.72rem;color:var(--ink-soft);}
+.bar-track{flex:1;background:var(--paper-line);height:16px;position:relative;}
+.bar-fill{height:100%;background:var(--ink);}
+.bar-fill.after{background:var(--green);}
+.bar-val{font-size:0.72rem;font-family:'IBM Plex Mono',monospace;width:90px;text-align:right;}
+
+.empty{padding:24px;text-align:center;color:var(--ink-soft);font-size:0.9rem;border:1px dashed var(--paper-line);}
+.settings-strip{
+  display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:0.82rem;
+  background:var(--card);border:1px solid var(--paper-line);padding:10px 14px;margin-bottom:20px;
+}
+.settings-strip label{display:flex;align-items:center;gap:6px;}
+.settings-strip select{padding:4px 6px;border:1px solid var(--paper-line);border-radius:var(--radius);}
+footer{text-align:center;font-size:0.72rem;color:var(--ink-soft);margin-top:40px;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">Loading…</div>
+
+<script>
+// ---------- State ----------
+let loans = [];
+let settings = { claimTax: true, taxSlab: 30 };
+let editingLoanId = null; // null | 'new' | loan id
+let simState = { loanId: null, lumpsum: '', mode: 'tenure', result: null };
+let waterfallState = { surplus: '', goal: 'emi', result: null };
+let snapshots = [];
+let lastSavedAt = null;
+let storageReady = false;
+
+const LOAN_TYPES = [
+  ['home','Home Loan'],['car','Car Loan'],['personal','Personal Loan'],
+  ['education','Education Loan'],['gold','Gold Loan'],['creditcard','Credit Card'],['other','Other']
+];
+
+function seedLoans(){
+  return [
+    {id:'l1', name:'Home Loan — SBI', type:'home', outstanding:3200000, rate:8.4, tenure:180, emi:31324, rateType:'floating', purpose:'personal', sanctionedAfter2026:false, chargeOverride:null, taxBenefit:'home'},
+    {id:'l2', name:'Car Loan — HDFC', type:'car', outstanding:450000, rate:9.2, tenure:24, emi:20500, rateType:'fixed', purpose:'personal', sanctionedAfter2026:false, chargeOverride:null, taxBenefit:'none'},
+    {id:'l3', name:'Personal Loan', type:'personal', outstanding:200000, rate:14, tenure:18, emi:12383, rateType:'fixed', purpose:'personal', sanctionedAfter2026:false, chargeOverride:null, taxBenefit:'none', lockInMonths:10, lockInBarred:true, lockInChargePct:4, flatFee:0},
+    {id:'l4', name:'Credit Card Outstanding', type:'creditcard', outstanding:80000, rate:36, tenure:18, emi:5817, rateType:'floating', purpose:'personal', sanctionedAfter2026:false, chargeOverride:null, taxBenefit:'none'}
+  ];
+}
+
+// ---------- Persistence ----------
+async function loadState(){
+  try{
+    const r = await window.storage.get('loan-portfolio');
+    loans = r ? JSON.parse(r.value) : seedLoans();
+  }catch(e){ loans = seedLoans(); }
+  try{
+    const r2 = await window.storage.get('app-settings');
+    settings = r2 ? JSON.parse(r2.value) : settings;
+  }catch(e){ /* keep defaults */ }
+  try{
+    const r3 = await window.storage.get('portfolio-snapshots');
+    snapshots = r3 ? JSON.parse(r3.value) : [];
+  }catch(e){ snapshots = []; }
+  storageReady = true;
+  render();
+}
+async function saveLoans(){
+  try{
+    const res = await window.storage.set('loan-portfolio', JSON.stringify(loans));
+    if(res) lastSavedAt = new Date();
+  }catch(e){ console.error('save loans failed', e); }
+}
+async function saveSettings(){
+  try{ await window.storage.set('app-settings', JSON.stringify(settings)); }catch(e){ console.error('save settings failed', e); }
+}
+
+// ---------- Finance math ----------
+function emiCalc(P, annualRate, n){
+  const r = annualRate/12/100;
+  if(n<=0) return 0;
+  if(r===0) return P/n;
+  const f = Math.pow(1+r, n);
+  return P*r*f/(f-1);
+}
+function totalInterest(P, emi, n){ return Math.max(0, emi*n - P); }
+
+function effectiveRate(loan){
+  if(!settings.claimTax || loan.taxBenefit==='none' || loan.type==='creditcard') return loan.rate;
+  const annualInterestApprox = loan.outstanding * loan.rate/100;
+  if(loan.taxBenefit==='home'){
+    if(annualInterestApprox<=0) return loan.rate;
+    const capped = Math.min(annualInterestApprox, 200000);
+    const shieldFraction = (capped/annualInterestApprox) * (settings.taxSlab/100);
+    return loan.rate*(1-shieldFraction);
+  }
+  if(loan.taxBenefit==='education'){
+    return loan.rate*(1-settings.taxSlab/100);
+  }
+  return loan.rate;
+}
+
+function chargeInfo(loan){
+  if(loan.type==='creditcard') return {pct:0, note:'No foreclosure concept — this is revolving balance. Paying it down is always highest priority.', zero:true};
+  if(loan.rateType==='floating' && loan.purpose==='personal') return {pct:0, note:'RBI rules bar prepayment/foreclosure charges on floating-rate loans to individuals for non-business use.', zero:true};
+  if(loan.rateType==='floating' && loan.purpose==='business'){
+    if(loan.sanctionedAfter2026) return {pct:0, note:'RBI (Pre-payment Charges on Loans) Directions, 2025 remove charges on MSE floating loans sanctioned/renewed on/after 1 Jan 2026.', zero:true};
+    const pct = loan.chargeOverride!=null ? loan.chargeOverride : 2;
+    return {pct, note:'Pre-2026 business floating loan — charges may still apply. Confirm in your sanction letter/KFS.', zero:false};
+  }
+  if(loan.rateType==='fixed'){
+    const pct = loan.chargeOverride!=null ? loan.chargeOverride : 3;
+    return {pct, note:'Fixed-rate loans can still carry a prepayment charge — confirm the exact % with your lender.', zero:false};
+  }
+  return {pct:0, note:'', zero:true};
+}
+
+// Layers a lock-in period on top of the base charge rules: some loans (personal loans especially)
+// either forbid any part-payment for the first N months, or allow it but at a steeper charge than
+// what applies once the lock-in ends.
+function effectiveChargeInfo(loan){
+  const lockIn = loan.lockInMonths||0;
+  if(lockIn>0){
+    if(loan.lockInBarred){
+      return {pct:null, barred:true, zero:false, lockedMonths:lockIn,
+        note:`Prepayment isn't permitted for another ${lockIn} month${lockIn===1?'':'s'} (lock-in clause).`};
+    }
+    const pct = loan.lockInChargePct!=null ? loan.lockInChargePct : 4;
+    return {pct, barred:false, zero:pct===0, lockedMonths:lockIn,
+      note:`Still in lock-in — ${lockIn} month${lockIn===1?'':'s'} left. A steeper ${pct}% charge applies until then.`};
+  }
+  return {...chargeInfo(loan), barred:false, lockedMonths:0};
+}
+
+// Simulates the loan month-by-month at a fixed EMI and rate, rather than trusting a closed-form
+// that assumes principal/rate/tenure/EMI are perfectly consistent. Real bank EMIs are rounded,
+// sometimes bundle insurance, or the loan has seen a rate reset — this stays accurate regardless.
+function simulateForward(P, annualRate, emi, capMonths){
+  capMonths = capMonths || 1200; // 100-year safety cap
+  const r = annualRate/12/100;
+  if(P<=0) return {months:0, interestPaid:0, neverPaysOff:false};
+  if(emi<=0) return {months:Infinity, interestPaid:Infinity, neverPaysOff:true};
+  let balance = P, months = 0, interestPaid = 0;
+  while(balance>0.5 && months<capMonths){
+    const interest = balance*r;
+    const principal = emi - interest;
+    if(principal<=0) return {months:Infinity, interestPaid:Infinity, neverPaysOff:true};
+    if(principal>=balance){
+      const frac = balance/principal; // fraction of this final EMI actually needed
+      interestPaid += interest*frac;
+      months += frac;
+      balance = 0;
+      break;
+    }
+    interestPaid += interest;
+    balance -= principal;
+    months++;
+  }
+  return {months, interestPaid, neverPaysOff: balance>0.5};
+}
+function loanSchedule(loan){ return simulateForward(loan.outstanding, loan.rate, loan.emi); }
+
+function emiConsistency(loan){
+  const sched = loanSchedule(loan);
+  if(sched.neverPaysOff) return {ok:false, neverPaysOff:true};
+  if(loan.tenure<=0) return {ok:true};
+  const diffPct = Math.abs(loan.tenure-sched.months)/Math.max(1,sched.months)*100;
+  return {ok: diffPct<12, actualMonths: sched.months, diffPct};
+}
+
+function fmt(n){
+  if(!isFinite(n)) return '∞';
+  n = Math.round(n);
+  return '₹' + n.toLocaleString('en-IN');
+}
+function pct(n){ return isFinite(n) ? n.toFixed(2)+'%' : '—'; }
+
+// ---------- Derived / summary ----------
+function summaryTotals(){
+  let outstanding=0, emiTotal=0, interestRemaining=0, weightedRateNum=0;
+  loans.forEach(l=>{
+    outstanding += l.outstanding;
+    emiTotal += l.emi;
+    const sched = loanSchedule(l);
+    interestRemaining += isFinite(sched.interestPaid) ? sched.interestPaid : 0;
+    weightedRateNum += l.outstanding*l.rate;
+  });
+  const wRate = outstanding>0 ? weightedRateNum/outstanding : 0;
+  return {outstanding, emiTotal, interestRemaining, wRate};
+}
+
+function rankedLoans(){
+  return [...loans].sort((a,b)=>{
+    if(a.type==='creditcard' && b.type!=='creditcard') return -1;
+    if(b.type==='creditcard' && a.type!=='creditcard') return 1;
+    return effectiveRate(b) - effectiveRate(a);
+  });
+}
+
+// ---------- Part-payment simulation ----------
+function simulatePartPayment(loan, lumpsum, mode){
+  const P = loan.outstanding;
+  const emi = loan.emi;
+  const base = loanSchedule(loan);
+  const oldInterest = base.interestPaid;
+  const oldTenure = base.months;
+  const newP = Math.max(0, P - lumpsum);
+  if(mode==='tenure'){
+    const newSched = simulateForward(newP, loan.rate, emi);
+    return {
+      mode:'tenure', oldEMI:emi, newEMI:emi, oldTenure, newTenure:newSched.months,
+      oldInterest, newInterest:newSched.interestPaid,
+      interestSaved: oldInterest-newSched.interestPaid, tenureSavedMonths: oldTenure-newSched.months
+    };
+  } else {
+    const n = isFinite(oldTenure) ? oldTenure : loan.tenure;
+    const newEMI = emiCalc(newP, loan.rate, n);
+    const newSched = simulateForward(newP, loan.rate, newEMI);
+    return {
+      mode:'emi', oldEMI:emi, newEMI, oldTenure, newTenure:newSched.months,
+      oldInterest, newInterest:newSched.interestPaid,
+      interestSaved: oldInterest-newSched.interestPaid, emiSaved: emi-newEMI
+    };
+  }
+}
+
+// ---------- Smart lump-sum optimizer ----------
+// Goal A: cut monthly EMI the most. For a fixed remaining tenure n, EMI(x) = (P-x)*k where
+// k = r(1+r)^n/((1+r)^n-1) is CONSTANT (doesn't depend on how much you've already prepaid).
+// So EMI-reduction per rupee prepaid is a flat, exact number per loan (empirically k = EMI/P) —
+// no need to approximate. Adjust for the prepayment charge, which inflates the cash you must
+// spend to free up that rupee of principal.
+function emiCutRate(loan){
+  const k = loan.outstanding>0 ? loan.emi/loan.outstanding : 0;
+  const info = effectiveChargeInfo(loan);
+  const netK = info.barred ? -Infinity : k/(1+(info.pct||0)/100);
+  return {k, netK, chargePct: info.pct||0, barred: info.barred};
+}
+
+function allocateForEmiCut(surplus){
+  const withRate = loans.map(l=>({loan:l, ...emiCutRate(l)}));
+  withRate.sort((a,b)=>b.netK-a.netK);
+  let remaining = surplus;
+  let totalEmiCut = 0;
+  const rows = withRate.map(({loan:l, k, netK, chargePct, barred})=>{
+    if(barred){
+      return {loan:l, principalAlloc:0, cashSpent:0, emiCut:0, closed:false, interestSaved:0, barred:true};
+    }
+    const cashToClose = l.outstanding*(1+chargePct/100);
+    let principalAlloc, cashSpent, closed;
+    if(remaining >= cashToClose){
+      principalAlloc = l.outstanding; cashSpent = cashToClose; closed = true;
+    } else {
+      cashSpent = remaining;
+      principalAlloc = cashSpent/(1+chargePct/100);
+      closed = false;
+    }
+    remaining -= cashSpent;
+    const emiCut = k*principalAlloc;
+    totalEmiCut += emiCut;
+    const interestSaved = principalAlloc>0 ? simulatePartPayment(l, principalAlloc, 'emi').interestSaved : 0;
+    return {loan:l, principalAlloc, cashSpent, emiCut, closed, interestSaved, barred:false};
+  });
+  return {rows, totalEmiCut, leftover:Math.max(0,remaining), goal:'emi'};
+}
+
+// Goal B: minimize total lifetime interest. Marginal rupee value differs per loan depending on
+// BOTH rate and remaining tenure (a low-rate loan with a long runway can beat a high-rate loan
+// that's almost finished, because that rupee would otherwise keep compounding for longer).
+// We compute the true marginal (calculus-derived, verified against finite differences) at each
+// step and pour the surplus, rupee by rupee, into whichever loan currently has the highest net
+// marginal benefit — a greedy "water-filling" allocation.
+function interestSavedAt(loan, x){
+  const newP = Math.max(0, loan.outstanding-x);
+  const before = loanSchedule(loan).interestPaid;
+  const after = simulateForward(newP, loan.rate, loan.emi).interestPaid;
+  if(!isFinite(before) || !isFinite(after)) return 0;
+  return before - after;
+}
+function marginalInterestValue(loan, x, taxAdjFactor, chargePct){
+  const eps = Math.max(1, loan.outstanding*0.001);
+  const capEps = Math.min(eps, loan.outstanding-x);
+  if(capEps<=0) return -Infinity;
+  const base = interestSavedAt(loan, x);
+  const bump = interestSavedAt(loan, x+capEps);
+  const grossPerRupee = (bump-base)/capEps;
+  return grossPerRupee*taxAdjFactor - chargePct/100;
+}
+function allocateForInterest(surplus){
+  const meta = loans.map(l=>{
+    const info = effectiveChargeInfo(l);
+    const taxAdjFactor = (settings.claimTax && l.rate>0) ? effectiveRate(l)/l.rate : 1;
+    return {loan:l, chargePct:info.pct||0, taxAdjFactor, barred:info.barred};
+  });
+  const alloc = {}; loans.forEach(l=>alloc[l.id]=0);
+  const numSteps = 300;
+  const chunk = surplus/numSteps;
+  let remaining = surplus;
+  for(let step=0; step<numSteps && remaining>0.5; step++){
+    let best=null, bestVal=-Infinity;
+    for(const m of meta){
+      if(m.barred) continue;
+      if(alloc[m.loan.id] >= m.loan.outstanding-0.5) continue;
+      const v = marginalInterestValue(m.loan, alloc[m.loan.id], m.taxAdjFactor, m.chargePct);
+      if(v>bestVal){ bestVal=v; best=m; }
+    }
+    if(!best) break;
+    const amt = Math.min(chunk, best.loan.outstanding-alloc[best.loan.id], remaining);
+    alloc[best.loan.id] += amt;
+    remaining -= amt;
+  }
+  let totalInterestSaved = 0;
+  const rows = loans.map(l=>{
+    const x = alloc[l.id];
+    const interestSaved = x>0.5 ? interestSavedAt(l, x) : 0;
+    totalInterestSaved += interestSaved;
+    return {loan:l, principalAlloc:x, closed: x>=l.outstanding-0.5, interestSaved};
+  }).sort((a,b)=>b.principalAlloc-a.principalAlloc);
+  return {rows, totalInterestSaved, leftover:Math.max(0,remaining), goal:'interest'};
+}
+
+function runOptimizer(surplus, goal){
+  if(surplus<=0) return null;
+  return goal==='emi' ? allocateForEmiCut(surplus) : allocateForInterest(surplus);
+}
+
+// ---------- Minimum worthwhile lump sum ----------
+// Small prepayments can be swallowed by a flat processing fee or a lock-in-period charge.
+// This finds the smallest amount that (a) clearly nets positive after all charges (net benefit
+// at least 3x the charge paid — not just barely breaking even) and (b) saves at least 3 months
+// of tenure, which is the point most people would actually notice and call "worth doing."
+function minWorthwhileLumpsum(loan){
+  const eff = effectiveChargeInfo(loan);
+  if(eff.barred) return {barred:true, lockedMonths:eff.lockedMonths};
+  const chargePct = eff.pct||0;
+  const flatFee = loan.flatFee||0;
+  const base = loanSchedule(loan);
+  if(!isFinite(base.months) || base.months<3){
+    return {tooShort:true, monthsLeft: isFinite(base.months)?base.months:null};
+  }
+  const targetMonths = Math.min(3, base.months*0.5);
+  let lo=0, hi=loan.outstanding, found=null;
+  for(let i=0;i<40;i++){
+    const mid=(lo+hi)/2;
+    const sim = simulatePartPayment(loan, mid, 'tenure');
+    const chargeCost = flatFee + (chargePct/100)*mid;
+    const netBenefit = sim.interestSaved - chargeCost;
+    const meetsBar = sim.tenureSavedMonths>=targetMonths && netBenefit>=3*Math.max(flatFee,1);
+    if(meetsBar){ found=mid; hi=mid; } else { lo=mid; }
+  }
+  if(found==null) return {impossible:true};
+  const sim = simulatePartPayment(loan, found, 'tenure');
+  const chargeCost = flatFee + (chargePct/100)*found;
+  return {amount:found, tenureSavedMonths:sim.tenureSavedMonths, interestSaved:sim.interestSaved, chargeCost, lockedMonths:0};
+}
+
+// ---------- Snapshot history ----------
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+async function saveSnapshot(){
+  const s = summaryTotals();
+  const entry = {date: todayStr(), outstanding: s.outstanding, emiTotal: s.emiTotal, interestRemaining: s.interestRemaining};
+  const existingIdx = snapshots.findIndex(x=>x.date===entry.date);
+  if(existingIdx>=0) snapshots[existingIdx]=entry; else snapshots.push(entry);
+  snapshots.sort((a,b)=>a.date<b.date?-1:1);
+  try{ await window.storage.set('portfolio-snapshots', JSON.stringify(snapshots)); }catch(e){ console.error('snapshot save failed', e); }
+  render();
+}
+
+// ---------- Rendering ----------
+function render(){
+  const app = document.getElementById('app');
+  if(!storageReady){ app.innerHTML = '<div class="empty">Loading your ledger…</div>'; return; }
+
+  const s = summaryTotals();
+  const ranked = rankedLoans();
+
+  app.innerHTML = `
+    <div class="masthead">
+      <div>
+        <div class="tag">Personal Finance · India</div>
+        <h1>Smart EMI Ledger</h1>
+      </div>
+      <div style="text-align:right;">
+        <div class="tag">${loans.length} loan${loans.length!==1?'s':''} on record</div>
+        <div style="font-size:0.68rem;color:var(--green);margin-top:3px;">${lastSavedAt ? '● Saved '+lastSavedAt.toLocaleTimeString() : '● Entries stored — persist automatically'}</div>
+      </div>
+    </div>
+
+    <div class="disclaimer">This is a planning tool, not financial, tax, or legal advice. Prepayment charge rules and tax-benefit estimates are simplified — confirm exact figures with your lender's sanction letter / Key Facts Statement and a tax advisor before acting.</div>
+
+    <div class="summary">
+      <div class="cell"><div class="label">Total Outstanding</div><div class="value">${fmt(s.outstanding)}</div></div>
+      <div class="cell"><div class="label">Monthly EMI Outflow</div><div class="value">${fmt(s.emiTotal)}</div></div>
+      <div class="cell"><div class="label">Weighted Avg Rate</div><div class="value">${pct(s.wRate)}</div></div>
+      <div class="cell"><div class="label">Interest Left to Pay</div><div class="value">${fmt(s.interestRemaining)}</div></div>
+    </div>
+
+    <div class="settings-strip">
+      <label><input type="checkbox" id="claimTax" ${settings.claimTax?'checked':''}/> Factor in tax benefits</label>
+      <label>My tax slab
+        <select id="taxSlab">
+          ${[0,5,10,15,20,25,30].map(v=>`<option value="${v}" ${settings.taxSlab==v?'selected':''}>${v}%</option>`).join('')}
+        </select>
+      </label>
+      <span style="color:var(--ink-soft);font-size:0.78rem;">Used to estimate effective cost of home/education loans (Sec 24(b) / 80E), old tax regime only.</span>
+    </div>
+
+    <section>
+      <div class="section-head"><h2>Your Loans</h2><button class="btn" data-action="new-loan">+ Add loan</button></div>
+      ${editingLoanId ? renderForm() : ''}
+      ${loans.length===0 && !editingLoanId ? '<div class="empty">No loans yet. Add your first one to get started.</div>' : ''}
+      ${loans.map((l,i)=>renderLoanRow(l,i)).join('')}
+    </section>
+
+    <section>
+      <div class="section-head"><h2>Prepayment Priority</h2><span class="idx">Highest effective cost first</span></div>
+      <div class="priority-list">
+        ${ranked.map((l,i)=>renderPriorityItem(l,i)).join('')}
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><h2>Smart Lump-Sum Allocator</h2><span class="idx">Optimized, not just ranked</span></div>
+      <div class="waterfall-input">
+        <div class="field"><label>Lump sum available (₹)</label><input type="number" id="surplusInput" value="${waterfallState.surplus}" placeholder="e.g. 100000"/></div>
+        <div class="field">
+          <label>Goal</label>
+          <select id="goalSelect">
+            <option value="emi" ${waterfallState.goal==='emi'?'selected':''}>Cut my monthly EMI the most</option>
+            <option value="interest" ${waterfallState.goal==='interest'?'selected':''}>Minimize total lifetime interest</option>
+          </select>
+        </div>
+        <button class="btn" data-action="run-waterfall">Calculate</button>
+      </div>
+      <div class="goal-explain">${waterfallState.goal==='emi'
+        ? 'For a fixed tenure, EMI drops by a constant amount per rupee prepaid on each loan — that constant (EMI ÷ outstanding, adjusted for any prepayment charge) is exact, not estimated. We fill the loan with the highest constant first, fully closing it if the lump sum allows, then move to the next.'
+        : 'The rupee that saves the most future interest isn\'t always on your highest-rate loan — a lower rate over a much longer remaining tenure can compound to a bigger number. We compute the true marginal interest saved per rupee for every loan (calculus, not a guess) and pour your lump sum into whichever loan is most valuable at each step.'}</div>
+      ${waterfallState.result ? renderOptimizerResult(waterfallState.result) : ''}
+    </section>
+
+    <section>
+      <div class="section-head"><h2>Minimum Worthwhile Lump Sum</h2><span class="idx">Per loan, per year</span></div>
+      <div class="goal-explain">Small part-payments can get eaten alive by a flat processing fee or a lock-in-period charge. This is the smallest amount, per loan, where the interest you save is clearly worth it (at least 3× what you pay in charges) and meaningfully dents your tenure — a sensible floor for an annual prepayment habit, not a hard rule.</div>
+      ${renderMinLumpsumTable()}
+    </section>
+
+    <section>
+      <div class="section-head"><h2>Progress History</h2><span class="idx">Track it over time</span></div>
+      <div class="waterfall-input">
+        <div style="font-size:0.85rem;color:var(--ink-soft);flex:2;">Save a dated snapshot of your totals so you can watch outstanding debt and interest shrink over the months.</div>
+        <button class="btn" data-action="save-snapshot">Save today's snapshot</button>
+      </div>
+      ${renderHistory()}
+    </section>
+
+    <section>
+      <div class="section-head"><h2>Part-Payment Simulator</h2><span class="idx">One loan at a time</span></div>
+      ${renderSimulator()}
+    </section>
+
+    <footer>Rates, charges and tax rules reflect general RBI guidance as of 2026 (Pre-payment Charges on Loans Directions, 2025) — always verify against your own agreement.</footer>
+  `;
+}
+
+function renderLoanRow(l, i){
+  const info = effectiveChargeInfo(l);
+  const eff = effectiveRate(l);
+  const consistency = emiConsistency(l);
+  const typeLabel = LOAN_TYPES.find(t=>t[0]===l.type)?.[1] || l.type;
+  const chargeBadge = info.barred
+    ? `<span class="badge charge">🔒 Locked ${info.lockedMonths}mo</span>`
+    : `<span class="badge ${info.zero?'zero':'charge'}">${info.zero?'No charge':info.pct+'%'+(info.lockedMonths>0?' (lock-in)':'')}</span>`;
+  return `
+    <div class="loan-row ${l.type}">
+      <div class="num">${String(i+1).padStart(2,'0')}</div>
+      <div class="main">
+        <div class="name">${escapeHtml(l.name)}</div>
+        <div class="meta">${typeLabel} · ${l.rateType==='floating'?'Floating':'Fixed'} · ${l.tenure} mo left ${eff.toFixed(2)!==l.rate.toFixed(2) ? '· eff. '+pct(eff)+' after tax' : ''}</div>
+        ${!consistency.ok ? (consistency.neverPaysOff
+          ? `<div class="meta" style="color:var(--rust);">⚠ At this EMI and rate, this loan's balance never reduces — EMI doesn't cover the interest. Check your entered EMI/rate.</div>`
+          : `<div class="meta" style="color:var(--rust);">⚠ At this EMI, payoff actually takes ~${Math.round(consistency.actualMonths)} months, not the ${l.tenure} you entered. Double-check your figures — simulations below use the actual math.</div>`) : ''}
+        ${info.lockedMonths>0 ? `<div class="meta" style="color:var(--rust);">${info.note}</div>` : ''}
+      </div>
+      <div class="figs">
+        <div class="f"><div class="l">Outstanding</div><div class="v">${fmt(l.outstanding)}</div></div>
+        <div class="f"><div class="l">Rate</div><div class="v">${pct(l.rate)}</div></div>
+        <div class="f"><div class="l">EMI</div><div class="v">${fmt(l.emi)}</div></div>
+        <div class="f"><div class="l">Charge</div><div class="v">${chargeBadge}</div></div>
+      </div>
+      <div class="row-actions">
+        <button class="btn secondary small" data-action="edit-loan" data-id="${l.id}">Edit</button>
+        <button class="btn danger small" data-action="delete-loan" data-id="${l.id}">Delete</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderPriorityItem(l, i){
+  const eff = effectiveRate(l);
+  const info = effectiveChargeInfo(l);
+  return `
+    <div class="priority-item">
+      <div class="stamp"><div class="r">${info.barred?'🔒':'#'+(i+1)}</div><div class="t">${info.barred?'Locked':'Priority'}</div></div>
+      <div class="pi-main">
+        <div class="nm">${escapeHtml(l.name)}</div>
+        <div class="note">${info.note}</div>
+      </div>
+      <div class="pi-rate">
+        <div class="eff">${pct(eff)}</div>
+        <div class="nom">${eff.toFixed(2)!==l.rate.toFixed(2) ? 'nominal '+pct(l.rate) : 'effective cost'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderOptimizerResult(result){
+  const isEmi = result.goal==='emi';
+  const rows = result.rows.filter(r=> (isEmi ? r.principalAlloc : r.principalAlloc) > 0.5 || true);
+  return `
+    <table class="waterfall-table">
+      <thead><tr>
+        <th>Loan</th><th>Principal Applied</th>${isEmi?'<th>Cash Needed</th><th>EMI Cut</th>':'<th>Interest Saved</th>'}<th></th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr>
+            <td class="name">${escapeHtml(r.loan.name)}</td>
+            <td>${r.principalAlloc>0.5?fmt(r.principalAlloc):'—'}</td>
+            ${isEmi
+              ? `<td>${r.principalAlloc>0.5?fmt(r.cashSpent):'—'}</td><td>${r.emiCut>0.5?fmt(r.emiCut)+'/mo':'—'}</td>`
+              : `<td>${r.interestSaved>0.5?fmt(r.interestSaved):'—'}</td>`}
+            <td>${r.closed?'<span class="closed-badge">CLOSED</span>':''}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div class="waterfall-summary">
+      ${isEmi
+        ? `This allocation cuts your monthly EMI outflow by <b>${fmt(result.totalEmiCut)}/month</b>.`
+        : `This allocation saves an estimated <b>${fmt(result.totalInterestSaved)}</b> in future interest.`}
+      ${result.leftover>0 ? `<br/>${fmt(result.leftover)} left unallocated — every outstanding balance is fully covered.` : ''}
+    </div>
+  `;
+}
+
+function renderMinLumpsumTable(){
+  if(loans.length===0) return '<div class="empty">Add a loan first.</div>';
+  const rows = loans.map(l=>({loan:l, res:minWorthwhileLumpsum(l)}));
+  return `
+    <table class="waterfall-table">
+      <thead><tr><th>Loan</th><th>Status</th><th>Suggested Min. Lump Sum</th><th>What it gets you</th></tr></thead>
+      <tbody>
+        ${rows.map(({loan:l, res})=>{
+          let status, amountCell, effectCell;
+          if(res.barred){
+            status = `<span class="badge charge">🔒 Locked ${res.lockedMonths}mo</span>`;
+            amountCell = '—';
+            effectCell = 'Wait for lock-in to end, then revisit.';
+          } else if(res.tooShort){
+            status = `<span class="badge zero">Almost done</span>`;
+            amountCell = '—';
+            effectCell = `Only ~${res.monthsLeft!=null?Math.round(res.monthsLeft):'a few'} months left — not worth a special lump sum, just let it finish.`;
+          } else if(res.impossible){
+            status = `<span class="badge zero">Low priority</span>`;
+            amountCell = '—';
+            effectCell = 'Even a large prepayment here saves too little to be worth prioritizing this year.';
+          } else {
+            status = `<span class="badge zero">Open</span>`;
+            amountCell = `<b>${fmt(res.amount)}</b>`;
+            effectCell = `Saves ~${fmt(res.interestSaved)} interest, ${res.tenureSavedMonths.toFixed(1)} months shorter${res.chargeCost>0.5?` (after ${fmt(res.chargeCost)} in charges)`:''}.`;
+          }
+          return `<tr>
+            <td class="name">${escapeHtml(l.name)}</td>
+            <td>${status}</td>
+            <td>${amountCell}</td>
+            <td style="font-family:'IBM Plex Sans',sans-serif;font-size:0.82rem;">${effectCell}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderHistory(){
+  if(snapshots.length===0) return '<div class="empty">No snapshots yet — save one today, then check back next month to see your progress.</div>';
+  const sorted = [...snapshots].sort((a,b)=>a.date<b.date?1:-1);
+  return `
+    <table class="history-table">
+      <thead><tr><th>Date</th><th>Outstanding</th><th>Monthly EMI</th><th>Interest Left</th></tr></thead>
+      <tbody>
+        ${sorted.map((snap,i)=>{
+          const prev = sorted[i+1];
+          const delta = prev ? snap.outstanding - prev.outstanding : null;
+          return `<tr>
+            <td class="name" style="font-family:'IBM Plex Sans',sans-serif;">${snap.date}</td>
+            <td>${fmt(snap.outstanding)} ${delta!=null ? `<span class="${delta<=0?'delta-pos':'delta-neg'}" style="font-size:0.72rem;">(${delta<=0?'−':'+'}${fmt(Math.abs(delta))})</span>` : ''}</td>
+            <td>${fmt(snap.emiTotal)}</td>
+            <td>${fmt(snap.interestRemaining)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderSimulator(){
+  if(loans.length===0) return '<div class="empty">Add a loan first to run a simulation.</div>';
+  const loanId = simState.loanId || loans[0].id;
+  return `
+    <div class="sim-grid">
+      <div class="field">
+        <label>Loan</label>
+        <select id="simLoan">
+          ${loans.map(l=>`<option value="${l.id}" ${l.id===loanId?'selected':''}>${escapeHtml(l.name)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label>Lump sum (₹)</label>
+        <input type="number" id="simLumpsum" value="${simState.lumpsum}" placeholder="e.g. 200000"/>
+      </div>
+      <div class="field">
+        <label>Goal</label>
+        <select id="simMode">
+          <option value="tenure" ${simState.mode==='tenure'?'selected':''}>Reduce tenure (keep EMI)</option>
+          <option value="emi" ${simState.mode==='emi'?'selected':''}>Reduce EMI (keep tenure)</option>
+        </select>
+      </div>
+      <button class="btn" data-action="run-sim">Simulate</button>
+    </div>
+    ${simState.result ? renderSimResult(simState.result) : ''}
+  `;
+}
+
+function renderSimResult(res){
+  const maxInterest = Math.max(res.oldInterest, res.newInterest, 1);
+  return `
+    <div class="sim-result">
+      <div class="sim-card">
+        <h3>Before</h3>
+        <div class="kv"><span class="k">EMI</span><span class="v">${fmt(res.oldEMI)}</span></div>
+        <div class="kv"><span class="k">Tenure remaining</span><span class="v">${Math.round(res.oldTenure)} mo</span></div>
+        <div class="kv"><span class="k">Interest remaining</span><span class="v">${fmt(res.oldInterest)}</span></div>
+      </div>
+      <div class="sim-card after">
+        <h3>After part-payment</h3>
+        <div class="kv"><span class="k">EMI</span><span class="v">${fmt(res.newEMI)}</span></div>
+        <div class="kv"><span class="k">Tenure remaining</span><span class="v">${Math.round(res.newTenure)} mo</span></div>
+        <div class="kv"><span class="k">Interest remaining</span><span class="v">${fmt(res.newInterest)}</span></div>
+      </div>
+    </div>
+    <div class="bar-compare">
+      <div class="bar-row">
+        <div class="lbl">Before</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(res.oldInterest/maxInterest*100).toFixed(1)}%"></div></div>
+        <div class="bar-val">${fmt(res.oldInterest)}</div>
+      </div>
+      <div class="bar-row">
+        <div class="lbl">After</div>
+        <div class="bar-track"><div class="bar-fill after" style="width:${(res.newInterest/maxInterest*100).toFixed(1)}%"></div></div>
+        <div class="bar-val">${fmt(res.newInterest)}</div>
+      </div>
+    </div>
+    <div class="waterfall-summary" style="margin-top:14px;">
+      You save an estimated <b>${fmt(res.interestSaved)}</b> in interest
+      ${res.mode==='tenure' ? `and finish ${Math.round(res.tenureSavedMonths)} months sooner.` : `while cutting your EMI by ${fmt(res.emiSaved)}/month.`}
+    </div>
+  `;
+}
+
+function renderForm(){
+  const isNew = editingLoanId==='new';
+  const l = isNew ? {id:null,name:'',type:'personal',outstanding:'',rate:'',tenure:'',emi:'',rateType:'floating',purpose:'personal',sanctionedAfter2026:false,chargeOverride:'',taxBenefit:'none',lockInMonths:0,lockInBarred:false,lockInChargePct:4,flatFee:0} : loans.find(x=>x.id===editingLoanId);
+  const showPurposeFields = l.type!=='creditcard';
+  const showSanctionCheck = l.rateType==='business' ? false : (l.rateType==='floating' && l.purpose==='business');
+  const showTaxBenefit = l.type==='home' || l.type==='education';
+  const hasLockIn = (l.lockInMonths||0) > 0;
+  return `
+    <div class="form-panel">
+      <div class="form-grid">
+        <div class="field"><label>Loan name</label><input id="f_name" value="${escapeAttr(l.name)}" placeholder="e.g. Home Loan — SBI"/></div>
+        <div class="field"><label>Type</label>
+          <select id="f_type">${LOAN_TYPES.map(t=>`<option value="${t[0]}" ${l.type===t[0]?'selected':''}>${t[1]}</option>`).join('')}</select>
+        </div>
+        <div class="field"><label>Outstanding principal (₹)</label><input type="number" id="f_outstanding" value="${l.outstanding}"/></div>
+        <div class="field"><label>Annual interest rate (%)</label><input type="number" step="0.01" id="f_rate" value="${l.rate}"/></div>
+        <div class="field"><label>Remaining tenure (months)</label><input type="number" id="f_tenure" value="${l.tenure}"/></div>
+        <div class="field"><label>Current EMI (₹)</label><input type="number" id="f_emi" value="${l.emi}"/></div>
+        ${showPurposeFields ? `
+        <div class="field"><label>Rate type</label>
+          <select id="f_rateType">
+            <option value="floating" ${l.rateType==='floating'?'selected':''}>Floating</option>
+            <option value="fixed" ${l.rateType==='fixed'?'selected':''}>Fixed</option>
+          </select>
+        </div>
+        <div class="field"><label>Purpose</label>
+          <select id="f_purpose">
+            <option value="personal" ${l.purpose==='personal'?'selected':''}>Personal / non-business</option>
+            <option value="business" ${l.purpose==='business'?'selected':''}>Business / MSE</option>
+          </select>
+        </div>
+        <div class="field check"><input type="checkbox" id="f_sanctioned" ${l.sanctionedAfter2026?'checked':''}/><label style="margin:0;">Sanctioned/renewed on or after 1 Jan 2026</label></div>
+        <div class="field"><label>Prepayment charge override (%, optional)</label><input type="number" step="0.1" id="f_charge" value="${l.chargeOverride??''}" placeholder="leave blank for default"/></div>
+        <div class="field"><label>Flat processing fee on part-payment (₹, optional)</label><input type="number" id="f_flatFee" value="${l.flatFee||''}" placeholder="0"/></div>
+        <div class="field"><label>Lock-in remaining (months, 0 if none)</label><input type="number" id="f_lockInMonths" value="${l.lockInMonths||0}"/></div>
+        <div class="field check"><input type="checkbox" id="f_lockInBarred" ${l.lockInBarred?'checked':''}/><label style="margin:0;">During lock-in, part-payment is not permitted at all (not just charged extra)</label></div>
+        <div class="field"><label>Lock-in period charge (%, if permitted during lock-in)</label><input type="number" step="0.1" id="f_lockInChargePct" value="${l.lockInChargePct!=null?l.lockInChargePct:4}"/></div>
+        ` : ''}
+        ${showTaxBenefit ? `
+        <div class="field"><label>Tax benefit claimed</label>
+          <select id="f_taxBenefit">
+            <option value="none" ${l.taxBenefit==='none'?'selected':''}>None</option>
+            <option value="${l.type==='home'?'home':'education'}" ${l.taxBenefit!=='none'?'selected':''}>${l.type==='home'?'Sec 24(b) home loan interest':'Sec 80E education loan interest'}</option>
+          </select>
+        </div>` : ''}
+      </div>
+      <div class="form-actions">
+        <button class="btn" data-action="save-loan" data-id="${isNew?'':l.id}">Save</button>
+        <button class="btn secondary" data-action="cancel-edit">Cancel</button>
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function escapeAttr(s){ return String(s).replace(/"/g,'&quot;'); }
+
+// ---------- Event delegation ----------
+document.getElementById('app').addEventListener('click', async (e)=>{
+  const btn = e.target.closest('[data-action]');
+  if(!btn) return;
+  const action = btn.dataset.action;
+
+  if(action==='new-loan'){ editingLoanId='new'; render(); }
+  else if(action==='edit-loan'){ editingLoanId=btn.dataset.id; render(); }
+  else if(action==='cancel-edit'){ editingLoanId=null; render(); }
+  else if(action==='delete-loan'){
+    loans = loans.filter(l=>l.id!==btn.dataset.id);
+    await saveLoans();
+    render();
+  }
+  else if(action==='save-loan'){
+    const name = document.getElementById('f_name').value.trim() || 'Untitled loan';
+    const type = document.getElementById('f_type').value;
+    const outstanding = parseFloat(document.getElementById('f_outstanding').value)||0;
+    const rate = parseFloat(document.getElementById('f_rate').value)||0;
+    const tenure = parseFloat(document.getElementById('f_tenure').value)||0;
+    const emi = parseFloat(document.getElementById('f_emi').value)||0;
+    const isCC = type==='creditcard';
+    const rateType = isCC ? 'floating' : document.getElementById('f_rateType').value;
+    const purpose = isCC ? 'personal' : document.getElementById('f_purpose').value;
+    const sanctionedAfter2026 = isCC ? false : document.getElementById('f_sanctioned').checked;
+    const chargeRaw = isCC ? '' : document.getElementById('f_charge').value;
+    const chargeOverride = chargeRaw===''? null : parseFloat(chargeRaw);
+    const flatFee = isCC ? 0 : (parseFloat(document.getElementById('f_flatFee').value)||0);
+    const lockInMonths = isCC ? 0 : (parseFloat(document.getElementById('f_lockInMonths').value)||0);
+    const lockInBarred = isCC ? false : document.getElementById('f_lockInBarred').checked;
+    const lockInChargePct = isCC ? 0 : (parseFloat(document.getElementById('f_lockInChargePct').value)||0);
+    const taxBenefitEl = document.getElementById('f_taxBenefit');
+    const taxBenefit = taxBenefitEl ? taxBenefitEl.value : 'none';
+
+    const id = btn.dataset.id || ('l'+Date.now());
+    const newLoan = {id,name,type,outstanding,rate,tenure,emi,rateType,purpose,sanctionedAfter2026,chargeOverride,taxBenefit,flatFee,lockInMonths,lockInBarred,lockInChargePct};
+    const idx = loans.findIndex(l=>l.id===id);
+    if(idx>=0) loans[idx]=newLoan; else loans.push(newLoan);
+    editingLoanId=null;
+    await saveLoans();
+    render();
+  }
+  else if(action==='run-waterfall'){
+    const surplus = parseFloat(document.getElementById('surplusInput').value)||0;
+    const goal = document.getElementById('goalSelect').value;
+    waterfallState.surplus = surplus;
+    waterfallState.goal = goal;
+    waterfallState.result = runOptimizer(surplus, goal);
+    render();
+  }
+  else if(action==='save-snapshot'){
+    await saveSnapshot();
+  }
+  else if(action==='run-sim'){
+    const loanId = document.getElementById('simLoan').value;
+    const lumpsum = parseFloat(document.getElementById('simLumpsum').value)||0;
+    const mode = document.getElementById('simMode').value;
+    simState.loanId = loanId; simState.lumpsum = lumpsum; simState.mode = mode;
+    const loan = loans.find(l=>l.id===loanId);
+    simState.result = loan ? simulatePartPayment(loan, lumpsum, mode) : null;
+    render();
+  }
+});
+
+document.getElementById('app').addEventListener('change', async (e)=>{
+  if(e.target.id==='claimTax'){ settings.claimTax = e.target.checked; await saveSettings(); render(); }
+  if(e.target.id==='taxSlab'){ settings.taxSlab = parseFloat(e.target.value); await saveSettings(); render(); }
+});
+
+loadState();
+</script>
+</body>
+</html>
